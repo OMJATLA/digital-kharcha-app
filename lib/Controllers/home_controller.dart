@@ -51,8 +51,8 @@ class HomeController extends GetxController {
     await sqliteService.initializeDB();
 
     // get transcations in this list
-    updateAllData();
-    updateDataTimeWise();
+    // updateAllData();
+    // updateDataTimeWise();
   }
 
   void connectIncommingMsgs() {
