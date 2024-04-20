@@ -57,13 +57,17 @@
 //   }
 // }
 
+import 'package:digital_kharcha_app/Models/year_table.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 import '../Models/transaction_details.dart';
 
 class SqliteService {
+  static SharedPreferences? prefs;
+
   // static RxList<TranscationDetails> transcationDetailsList =
   //     <TranscationDetails>[].obs;
   Database? db;
@@ -117,6 +121,44 @@ class SqliteService {
     );
 
     debugPrint("Sql Connection Done......................................");
+  }
+
+  Future<void> insertYearTable() async {
+    prefs = await SharedPreferences.getInstance();
+    if (prefs!.getString('year') == null) {
+      print('1st time login');
+      prefs!.setString('year', DateTime.now().year.toString());
+      print("${prefs!.getString('year')} set succesfully");
+      await db!.insert(
+        'Year',
+        {'year': prefs!.getString('year'), 'yearly_amount': 0.0},
+      );
+    }
+    if (prefs!.getString('year') != DateTime.now().year.toString()) {
+      // new year
+      prefs!.setString('year', DateTime.now().year.toString());
+      print("${prefs!.getString('year')} set succesfully");
+      await db!.insert(
+        'Year',
+        {'year': prefs!.getString('year'), 'yearly_amount': 0.0},
+      );
+    }
+
+    if (prefs!.getString('year') != null &&
+        prefs!.getString('year') != DateTime.now().year.toString()) {
+      print("${prefs!.getString('year')} is  the year now ");
+    }
+  }
+
+  Future<List<Year>> getYears(Database db) async {
+    List<Map<String, dynamic>> maps = await db.query('Year');
+
+    return List.generate(maps.length, (i) {
+      return Year(
+        year: maps[i]['year'],
+        yearlyAmount: maps[i]['yearly_amount'],
+      );
+    });
   }
 
 //inserting...............................
